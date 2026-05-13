@@ -1,0 +1,156 @@
+
+from tkinter import *
+from tkinter import filedialog
+import pygame.mixer as mixer
+import os
+
+# Initialize mixer
+mixer.init()
+
+# Main window
+root = Tk()
+root.geometry("700x250")
+root.title("Python Music Player")
+root.config(bg="#2b2b2b")
+root.resizable(False, False)
+
+# Variables
+current_song = StringVar(root, value="No song selected")
+song_status = StringVar(root, value="Ready")
+
+# Functions
+
+def play_song(song_name, songs_list, status):
+
+    if songs_list.curselection():
+
+        song_name.set(songs_list.get(ACTIVE))
+
+        mixer.music.load(songs_list.get(ACTIVE))
+        mixer.music.play()
+
+        status.set("Song PLAYING")
+
+
+def stop_song(status):
+    mixer.music.stop()
+    status.set("Song STOPPED")
+
+
+def pause_song(status):
+    mixer.music.pause()
+    status.set("Song PAUSED")
+
+
+def resume_song(status):
+    mixer.music.unpause()
+    status.set("Song RESUMED")
+
+
+def load(listbox):
+
+    folder_selected = filedialog.askdirectory(title="Select Folder")
+
+    if folder_selected:
+
+        os.chdir(folder_selected)
+
+        tracks = os.listdir()
+
+        listbox.delete(0, END)
+
+        for track in tracks:
+
+            if track.endswith(".mp3"):
+                listbox.insert(END, track)
+
+
+# Song frame
+song_frame = LabelFrame(root,
+                        text="Current Song",
+                        bg="#6A0DAD",
+                        fg="white",
+                        width=400,
+                        height=80)
+
+song_frame.place(x=0, y=0)
+
+# Buttons frame
+button_frame = LabelFrame(root,
+                          text="Controls",
+                          bg="#4B0082",
+                          fg="white",
+                          width=400,
+                          height=170)
+
+button_frame.place(y=80)
+
+# Playlist frame
+listbox_frame = LabelFrame(root,
+                           text="Playlist",
+                           bg="#444",
+                           fg="white")
+
+listbox_frame.place(x=400, y=0, height=200, width=280)
+
+# Playlist
+playlist = Listbox(listbox_frame,
+                   font=("Helvetica", 11),
+                   bg="white",
+                   selectbackground="purple")
+
+scroll_bar = Scrollbar(listbox_frame, orient=VERTICAL)
+scroll_bar.pack(side=RIGHT, fill=BOTH)
+
+playlist.config(yscrollcommand=scroll_bar.set)
+scroll_bar.config(command=playlist.yview)
+
+playlist.pack(fill=BOTH, padx=5, pady=5)
+
+# Labels
+Label(song_frame,
+      text="CURRENTLY PLAYING:",
+      bg="white",
+      font=("Arial", 10, "bold")).place(x=10, y=20)
+
+song_lbl = Label(song_frame,
+                 textvariable=current_song,
+                 bg="white",
+                 width=25)
+
+song_lbl.place(x=170, y=20)
+
+# Buttons
+Button(button_frame,
+       text="▶ Play",
+       width=10,
+       command=lambda: play_song(current_song, playlist, song_status)).grid(row=0, column=0, padx=5, pady=5)
+
+Button(button_frame,
+       text="⏸ Pause",
+       width=10,
+       command=lambda: pause_song(song_status)).grid(row=0, column=1, padx=5, pady=5)
+
+Button(button_frame,
+       text="▶ Resume",
+       width=10,
+       command=lambda: resume_song(song_status)).grid(row=0, column=2, padx=5, pady=5)
+
+Button(button_frame,
+       text="⏹ Stop",
+       width=10,
+       command=lambda: stop_song(song_status)).grid(row=1, column=1, padx=5, pady=5)
+
+Button(button_frame,
+       text="📂 Load Songs",
+       width=32,
+       command=lambda: load(playlist)).grid(row=2, column=0, columnspan=3, pady=10)
+
+# Status label
+Label(root,
+      textvariable=song_status,
+      bg="white",
+      font=("Arial", 10)).pack(side=BOTTOM, fill=X)
+
+# Run app
+root.mainloop()
